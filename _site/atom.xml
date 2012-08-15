@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
  
- <title>Jekyll Bootstrap</title>
+ <title>dp studio</title>
  <link href="http://username.github.com/atom.xml" rel="self"/>
  <link href="http://username.github.com"/>
- <updated>2012-08-15T14:23:32+08:00</updated>
+ <updated>2012-08-15T14:34:00+08:00</updated>
  <id>http://username.github.com</id>
  <author>
-   <name>Name Lastname</name>
-   <email>blah@email.test</email>
+   <name>拿小xi的铅笔</name>
+   <email>dp0304@gmail.com</email>
  </author>
 
  
