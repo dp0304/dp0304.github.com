@@ -1,7 +1,7 @@
 ---
 layout: page
-title: Hello World!
-tagline: Supporting tagline
+title: dp studio
+tagline: Hey you !!! You may say that I'm a dreamer, but I' m not the only one !
 ---
 {% include JB/setup %}
 
