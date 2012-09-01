@@ -54,9 +54,18 @@
 
           <div class="nav-collapse">
             <ul class="nav">
-              {% assign pages_list = site.pages %}
-              {% assign group = 'navigation' %}
-              {% include JB/pages_list %}
+        <li><a href="/archive.html">Archive</a></li>
+      	<li><a href="/erlang.html">erlang</a></li> 	     
+ 	<li><a href="/c.html">c</a></li>
+      	<li><a href="/life.html">Life</a></li>
+      	<li><a href="/categories.html">分类</a></li>
+      	<li><a href="/message.html">留言</a></li>
+     	<li><a href="/about.html">About me</a></li>
+      	            
+    
+  
+
+
             </ul>
             <ul class="nav pull-right social">
               <li class="divider-vertical"></li>
@@ -90,6 +99,9 @@
                   <a href="http://feeds.feedburner.com/{{ site.author.feedburner }}" class="zocial rss icon" target="_blank"></a>
                 </li>
               {% endif %}
+               <li>
+              <a href="{{BASE_PATH}}/atom.xml" rel="nofollow" title="subscribe via RSS">订阅</a>
+            </li>
             </ul>
           </div>
         </div>

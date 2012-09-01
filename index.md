@@ -7,9 +7,9 @@ tagline: Hey you !!! You may say that I'm a dreamer, but I' m not the only one !
 
 
 
-## 首页写什么呢
-
-好吧，我来了github page
-    
-
+<ul class="posts">
+{% for post in site.posts %}
+<li><p class="date" cate="{{ post.categories }}">{{ post.date | date:"%Y-%m-%d" }}</p> <a href="{{ post.url }}">{{ post.title }}</a></li>
+{% endfor %}
+</ul>
 
