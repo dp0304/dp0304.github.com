@@ -16,7 +16,8 @@ body {
   text-shadow: 1px 1px 1px #000;
   height: 100%;
   font-family: 'Oxygen', sans-serif;
-  font-size: 14px;
+  font-size: 15px;
+  line-height: 24px;
 }
 
 /* line 26, ../_sass/_base.scss */
@@ -78,6 +79,8 @@ pre > code {
   -moz-box-shadow: none;
   -webkit-box-shadow: none;
   -o-box-shadow: none;
+   font-size: 14px;
+   line-height: 24px;
 }
 
 /* line 74, ../_sass/_base.scss */
