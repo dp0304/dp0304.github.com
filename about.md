@@ -74,7 +74,10 @@ not for money，but for fun
 ## where am I come form  <a name="where"></a>
 
 广东的，在<a rel="tooltip" title="好吧，广东石油化工学院，大四咯">某学校</a>等毕业~~~	
-
+  
+留下以前blog的地址  
+[dp0304](http://blog.csdn.net/dp0304)  
+  
 留下邮箱一枚自己替换#吧  
 dp0304#gmail.com 	
 
