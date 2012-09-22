@@ -18,6 +18,10 @@ tags: []
 
 [概括]: #sum
 
+
+-----
+
+
 ###概括   <a name="sum"></a>   
 NIF库包含了erlang模块的一些方法的原生实现。这些NIF方法的调用方式跟其他普通方法的调用一样，但是每个NIF函数都要用erlang对应的实现，如果NIF库成功载入，在调用NIF函数之前，会先调用对应的erlang实现的函数。
 
@@ -78,6 +82,10 @@ NIF库不一定要被exproted的，可以作为erlang模块私有。
 一个NIF库被load时候是绑定erlang模块的version。如果erlang模块更新了，新模块要去加载多一次NIF作为自己的（或选择不去加载，这样的话，新的erlang模块并没有NIF）。如果一个NIF被多次load和调用的话，意味着NIF里面的static data同样会被共享。为了避免这样的无心的共享static data，每个erlang模块代码应该要保存自己的私有数据，而在NIF里面，可以通过调用``void *enif_priv_data(ErlNifEnv* env)``来获得私有数据。
 
 没有方法去声明unload一个NIF库，当erlang模块被卸载时候，NIF会被自动unload。
+
+
+---
+by dp
 
   
 
