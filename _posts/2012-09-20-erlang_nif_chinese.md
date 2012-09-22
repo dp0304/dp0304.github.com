@@ -9,20 +9,21 @@ tags: []
 
 ## 前言
   
-   这是翻译erlang官方文档中的 erts-5.9.2的erl_nif部分。尽量每日更新。（最后更新时间2012.09.20）
+   这是翻译erlang官方文档中的 erts-5.9.2的erl_nif部分。尽量每日更新。（最后更新时间2012.09.22）
 
 ## erlang nif 中文手册
 ---
 * [概括][]
+* [功能][]
 
 
 [概括]: #sum
-
+[功能]: #functionality
 
 -----
 
 
-###概括   <a name="sum"></a>   
+#概括   <a name="sum"></a>   
 NIF库包含了erlang模块的一些方法的原生实现。这些NIF方法的调用方式跟其他普通方法的调用一样，但是每个NIF函数都要用erlang对应的实现，如果NIF库成功载入，在调用NIF函数之前，会先调用对应的erlang实现的函数。
 
 
@@ -84,6 +85,31 @@ NIF库不一定要被exproted的，可以作为erlang模块私有。
 没有方法去声明unload一个NIF库，当erlang模块被卸载时候，NIF会被自动unload。
 
 
+
+
+
+
+
+#功能   <a name="functionality"></a>
+NIF库所有函数有以下几种功能：  
+
+* __读写erlang的terms__  
+
+	所有的erlang terms都可以通过作为函数的参数或者返回值来进行erlang和NIF库的传递。erlang的terms对应的是一个叫`ERL_NIF_TERM`的c结构体，而且只能通过调用特定的API才能读写erlang terms。大部分读terms的API都是`enif_get_`前缀的。而大部分写terms的API都是`enif_make_`前缀，而通常会把写的那个`ERL_NIF_TERM`作为返回值返回。还有一些API是用来监狱terms的，例如`enif_is_atom`,`enif_is_identical`,`enif_compare`。   
+	
+	
+	所有`ERL_NIF_TERM`都属于一个代表NIF环境的类型：`ErlNifEnv`。所有terms的生命周期都由该`ErlNifEnv`来控制。所有读写terms的函数的第一个变量都是这个`ErlNifEnv`。
+  	
+  		
+  		
+		
+  		
+* __二进制__  
+  
+	二进制类型的terms可以通过一个结构体`ErlNifBinary`来操作。这个结构体包含一个指向原始二进制数据的指针和这个数据在字节长度。数据和长度都是只读的类型而且只能通过调用API函数去写（`注：调用某些方法后，会使他们变成可读`）。然而通常会实例一个`ErlNifBinary`然后分配给用户（通常是本地变量）。		
+	指针指向的原始数据只有通过调用`enif_alloc_bianry`或者`enif_realloc_bianry`之后才能变得可改变。其他所以操作binary的函数都是只读。一个可以改变的binary在最后必须要调用`enif_release_binary`来释放或者调用`enif_make_binary`转换成只读的erlang terms。只读的binary是不需要被释放。在同样的NIF call里面可以使用`enif_make_new_binary`分配和返回一个binary。binaries会被序列化全部字节。bitstrings 还不支持任意bit长度。
+	
+	
 ---
 by dp
 
