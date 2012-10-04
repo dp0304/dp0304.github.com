@@ -107,7 +107,11 @@ NIF库所有函数有以下几种功能：
 * __二进制__  
   
 	二进制类型的terms可以通过一个结构体`ErlNifBinary`来操作。这个结构体包含一个指向原始二进制数据的指针和这个数据在字节长度。数据和长度都是只读的类型而且只能通过调用API函数去写（`注：调用某些方法后，会使他们变成可读`）。然而通常会实例一个`ErlNifBinary`然后分配给用户（通常是本地变量）。		
-	指针指向的原始数据只有通过调用`enif_alloc_bianry`或者`enif_realloc_bianry`之后才能变得可改变。其他所以操作binary的函数都是只读。一个可以改变的binary在最后必须要调用`enif_release_binary`来释放或者调用`enif_make_binary`转换成只读的erlang terms。只读的binary是不需要被释放。在同样的NIF call里面可以使用`enif_make_new_binary`分配和返回一个binary。binaries会被序列化全部字节。bitstrings 还不支持任意bit长度。
+	指针指向的原始数据只有通过调用`enif_alloc_bianry`或者`enif_realloc_bianry`之后才能变得可改变。其他所以操作binary的函数都是只读。一个可以改变的binary在最后必须要调用`enif_release_binary`来释放或者调用`enif_make_binary`转换成只读的erlang terms。只读的binary是不需要被释放。在同样的NIF call里面可以使用`enif_make_new_binary`分配和返回一个binary。binaries会被序列化全部字节。bitstrings 还不支持任意bit长度。  
+	 
+	 
+* __资源对象__  
+	
 	
 	
 ---
