@@ -9,7 +9,7 @@ tags: []
 
 ## 前言
   
-   这是翻译erlang官方文档中的 erts-5.9.2的erl_nif部分。尽量每日更新。（最后更新时间2012.09.22）
+   这是翻译erlang官方文档中的 erts-5.9.2的erl_nif部分。尽量每日更新。（最后更新时间2012.10.24）
 
 ## erlang nif 中文手册
 ---
@@ -112,8 +112,39 @@ NIF库所有函数有以下几种功能：
 	 
 * __资源对象__  
 	
-	使用资源对象的一个比较安全的方式是调用NIF借口把指向该数据的指针返回，一个资源对象实际上只是一块通过 `enif_alloc_resource `分配的内存。
+	使用资源对象的一个比较安全的方式是调用NIF借口把指向该数据的指针返回，一个资源对象实际上只是一块通过 `enif_alloc_resource `分配的内存。一个处理方法是通过使用` enif_make_resource `把这块内存（指针）返回给erlang。`enif_make_resource`的返回值是完全不透明的，它可以在同节点内不同进程间传递和存储，唯一的正确用法是在最后把返回值返回给NIF，然后NIF可以调用`enif_get_resource`取得指针。直到最后一个`ERL_NIF_TERM`被虚拟机回收和资源已经被`enif_release_resource`释放的时候，资源对象才会被回收。   
 	
+	
+	所有的资源对象都必须带有资源类型，这样可以使得资源在不同模块时候仍然可以区分出来。当库被加载时候调用`enif_get_resource`去创建资源类型。当对象带有资源类型后，可以通过`enif_get_resource`来校验是否是期待的类型。一个资源类型可以用户自定义的析构函数（借用C++）。资源类型是唯一定义的string名字和唯一的实现模块。
+	
+	
+        ERL_NIF_TERM term;
+        MyStruct* obj = enif_alloc_resource(my_resource_type, sizeof(MyStruct));
+        /* initialize struct ... */
+        term = enif_make_resource(env, obj);
+        if (keep_a_reference_of_our_own) {
+        	/* store 'obj' in static variable, private data or other resource object */
+        }
+        else {
+       		 enif_release_resource(obj);
+       		 /* resource now only owned by "Erlang" */
+        }
+        return term;
+        
+      
+   
+   
+   	注意一旦`enif_make_resource`创建了term返回给Erlang之后，有两个选择，一是保存它的指针到分配的结构体里面以后再释放。二是在垃圾收集时候释放它。   
+   	另外一种使用资源对象的方法的是使用定义的内存来创建binary terms，`enif_make_resource_binary`会创建binary terms并连接一个资源对象。当该binary terms 被回收时候后会调用资源对象的析构函数，同时该binary terms可以被释放。  
+   	
+   	资源类型支持运行时升级，通过运行允许一个被加载的库去接管已经存在的资源类型，并继承所有已经存在的对象，而且对象的类型都会变成那个接管的资源类型.新的库的析构函数从那以后就可以被继承的对象继承。这样的话，就的析构函数就可以被安全卸载。资源对象和模块被坑下后，必须被删除或者被新的NIF接管。卸载的库一直被阻塞直到所有已存在的资源对象被析构或是被新的NIF接管。   
+   	
+   	
+* __多线程和并发__   
+	一个NIF库是线程安全的，只要函数的动作只是单纯地读提供的数据，太是不需要直接声明任何同步锁。但是如果你对一个静态变量或者`enif_priv_data`进行写操作，你就要实现自己的同步锁操作。在进程独立环境里面的terms可以被多线程共享。资源对象需要锁。库在初始化时候的回调函数 `load` ,`reload` 和`upgrade`里就算是共享的静态数据也是线程安全的。__避免在NIF里面进行耗时的操作，这样会降低VM的相应速度。Erlang代码调用NIF时候是直接调同样调度线程去执行，调度会因此阻塞，直到返回。__    
+   	
+   	
+
 	
 ---
 by dp
