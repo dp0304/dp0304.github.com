@@ -9,16 +9,18 @@ tags: []
 
 ## 前言
   
-   这是翻译erlang官方文档中的 erts-5.9.2的erl_nif部分。尽量每日更新。（最后更新时间2012.10.24）
+   这是翻译erlang官方文档中的 erts-5.9.2的erl_nif部分。尽量每日更新。（最后更新时间2012.12.20）
 
 ## erlang nif 中文手册
 ---
 * [概括][]
 * [功能][]
+* [初始化][]
 
 
 [概括]: #sum
 [功能]: #functionality
+[初始化]: #initialization
 
 -----
 
@@ -142,8 +144,55 @@ NIF库所有函数有以下几种功能：
    	
 * __多线程和并发__   
 	一个NIF库是线程安全的，只要函数的动作只是单纯地读提供的数据，太是不需要直接声明任何同步锁。但是如果你对一个静态变量或者`enif_priv_data`进行写操作，你就要实现自己的同步锁操作。在进程独立环境里面的terms可以被多线程共享。资源对象需要锁。库在初始化时候的回调函数 `load` ,`reload` 和`upgrade`里就算是共享的静态数据也是线程安全的。__避免在NIF里面进行耗时的操作，这样会降低VM的相应速度。Erlang代码调用NIF时候是直接调同样调度线程去执行，调度会因此阻塞，直到返回。__    
-   	
-   	
+   	 
+   	 
+   	 
+   	 
+#初始化   <a name="initialization"></a>     
+
+* __ERL_NIF_INIT(MODULE, ErlNifFunc funcs[], load, reload,upgrade, unload)__   
+
+	这是一个初始化NIF库的宏技巧，它应该赋值给一个静态变量。   		
+	
+	 `MODULE`是erlang的模块名，是用一串无空格的字符串作为标识，它由一个宏去字符串化。  
+	 
+	`funcs` 是一个静态的数组 ，用来存放描述NIF库中实现的所有的方法名。  
+	
+	`load`,`reload`,`upgrade`,`unload`是函数的指针，在NIF库初始化或者卸载，更新时候就会自动调用对应的方法。（下面有介绍）  
+	
+	
+* __int (*load)(ErlNifEnv* env, void** priv_data, ERL_NIF_TERM load_info)__	
+	该方法是当NIF库第一次载入时候到会调用。	
+	
+	`*priv_data` 是一个指向保存自由数据的指针，该区域可以在多次NIF中保持静态，当该方法调用时候会被初始化为`NULL`。`enif_priv_data`方法可以返回该指针。  
+	
+	`load_info`是`erlang:load_nif/2` 的第二个参数。  
+	
+	当库加载失败时候会返回非0，如果没有指定加载方法就把`ERL_NIF_INIT`的`load`设为`NULL`。   
+	
+	
+* __int (*upgrade)(ErlNifEnv* env, void** priv_data, void** old_priv_data, ERL_NIF_TERM load_info)__  
+		
+	当已经载入旧库的库，而且要更新时候使用。  
+	
+	`*old_priv_data`已经包含了之前调用`load`和`reload`的值，而`*priv_data`会被初始化为`NULL`.  `*old_priv_data` 和 `*priv_data`都是可写的。	
+	
+	当更新失败时候返回非0，如果没有指定更新方法就把`ERL_NIF_INIT`的`upgrade`设为`NULL`。  
+	
+	
+* __void (*unload)(ErlNifEnv* env, void* priv_data)__  
+	
+	当库属于过旧要清理的情况下使用，注意这里并不是替换库操作。  
+	
+	
+	
+* __int (*reload)(ErlNifEnv* env, void** priv_data, ERL_NIF_TERM load_info)__  
+
+	__这个方法的实现机制是不可靠的，这只是一个开发者特性。不要使用该方法，实际环境中请把`reload`设为`NULL`__
+	
+
+	
+	
 
 	
 ---
