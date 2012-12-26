@@ -9,18 +9,21 @@ tags: []
 
 ## 前言
   
-   这是翻译erlang官方文档中的 erts-5.9.2的erl_nif部分。尽量每日更新。（最后更新时间2012.12.20）
+   这是翻译erlang官方文档中的 erts-5.9.2的erl_nif部分。尽量每日更新。（最后更新时间2012.12.26）
 
 ## erlang nif 中文手册
 ---
 * [概括][]
 * [功能][]
 * [初始化][]
-
+* [数据类型][]
+* [接口][]
 
 [概括]: #sum
 [功能]: #functionality
 [初始化]: #initialization
+[数据类型]: #datatype
+[接口]: #exports
 
 -----
 
@@ -193,6 +196,87 @@ NIF库所有函数有以下几种功能：
 
 	
 	
+#数据类型   <a name="datatype"></a>    
+	
+	
+* __ERL_NIF_TERM__  
+	
+	`ERL_NIF_TERM`类型的变量可以引用任何erlang term，这是个不透明类型，而且它的值只可以用作api函数的参数或者返回值。所有的`ERL_NIF_TERM`都属于`ErlNifEnv`。一个term是不可以单独摧毁的，它会一直有效，直到它的环境被摧毁。  
+	
+	
+	
+* __ErlNifEnv__  
+	
+	`ErlNifEnv`被描述为erlang terms的宿主（生存环境），环境中所有的terms的生命周期都和该环境一样。`ErlNifEnv`是一个不透明类型，指向它的指针只可以在api函数中传递，这里有两种环境，进程绑定和进程独立。  
+	
+	一个进程绑定的环境，会在所有的NIF函数里面作为第一个参数传递，所有传递给	
+	
+	
+* __ErlNifFunc__  
+       typedef struct {
+       const char* ;
+       unsigned ;
+       ERL_NIF_TERM (*)(ErlNifEnv* env, int argc, const RL_NIF_TERM argv[]);
+       } ErlNifFunc;  
+	
+	通过它的名字，参数数量和实现去定义一个NIF，`fptr` 是一个指向NIF实现函数的指针。NIF的参数`argv`包含了erlang传递给NIF的全部参数，`argc`是参数数组的长度。例如：如果参数`argv[N-1]` 就表明是第N个参数。注意：这个`argc`可以使一个C的函数被多个erlang函数的调用，这些erlang调用时候可以用不同的参数长度。   
+	
+	
+* __ErlNifBinary__  
+       typedef struct {
+         unsigned ;
+         unsigned char* ;
+       } ErlNifBinary;  
+	
+	
+	`ErlNifBianry`包含一个检查二进制term的短暂信息，`data`是一个指向长度为`size`,存放二进制原生内容的buffer。  
+	
+	注意：`ErlNifBinary`是一个半透明的类型，只允许读字段`size`和`data`。  
+	
+	
+	
+* __ErlNifPid__   
+	
+	`ErlNifPid`是一个进程的身份，对比pid terms（`ERL_NIF_TERM`的实例），`ErlNifPid`是自身包含自己且为绑定任何 environment。是一个不透明类型。  
+	
+	
+* __ErlNifResourceType__  
+	
+	每个`ErlNifResourceType`代表着一种内存管理资源对象，该可以可以被垃圾回收。每个资源类型都有一个唯一的名字和一个析构函数。对象销毁时候会自动调用析构函数。  
+	
+	
+* __ErlNifResourceDtor__  
+       typedef void ErlNifResourceDtor(ErlNifEnv* env, void* obj);  
+	
+	该函数原型包含一个资源的析构函数，这个资源析构函数不允许调用任何制造term的函数。  
+	
+	
+* __ErlNifCharEncoding__  
+       typedef enum {
+         ERL_NIF_LATIN1
+       }ErlNifCharEncoding;  
+	
+	这个字符转义用于string和atoms的转换，当前唯一支持的是`ERL_NIF_LATINL`(iso-latin-l,8-bit ascii)。  
+	
+	
+* __ErlNifSysInfo__  
+	用于`enif_system_info`去返回运行时系统的信息。包含当前精确的信息，跟`ErlDrvSysInfo`一样精确。  
+	
+	
+* __ErlNifSInt64__  
+	一个原生有符号的64bit长度的整形类型。  
+	
+	
+* __ErlNifUInt64__  
+	一个原生的无符号64bit长度的整形类型。  
+	
+	
+	
+#接口   <a name="exports"></a> 
+
+
+
+
 
 	
 ---
