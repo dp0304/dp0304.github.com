@@ -9,7 +9,7 @@ tags: []
 
 ## 前言
   
-   这是翻译erlang官方文档中的 erts-5.9.2的erl_nif部分。尽量每日更新。（最后更新时间2012.12.26）
+   这是翻译erlang官方文档中的 erts-5.9.2的erl_nif部分。尽量每日更新。（最后更新时间2012.12.31）
 
 ## erlang nif 中文手册
 ---
@@ -287,10 +287,7 @@ NIF库所有函数有以下几种功能：
 	
 		
 	
-* __int enif_alloc_binary(size_t size, ErlNifBinary* bin)__  
-	分配一个`size`个字节大小的二进制空间，初始化一个`ErlNifbinary`，把指针传入，会关联分配的空间。该二进制空间必须用`enif_release_binary`释放或者拥有者通过`enif_make_binary`转义成erlang的term。一个分配好空间的`ErlNifBinary`可以在多次NIF调用中保存下来。  
-	成功返回`true`，失败返回`false`。  
-	
+
 	
 * __ErlNifEnv *enif_alloc_env()__  
 	分配一个进程独立了的环境，该环境必须用来存放没有绑定任何进程的terms。可以在稍后再通过`enif_make_copy`复制到一个进程环境，或者通过`enif_send`作为一个信息发送到一个进程上。  
@@ -308,7 +305,10 @@ NIF库所有函数有以下几种功能：
 	而`flags`可以是下面的几个值：  
 	ERL_NIF_RT_CREATE：  创建一个新的资源类型。  
 	ERL_NIF_RT_TAKEOVER： 打开一个已经存在的资源对象，并且接管所有实例，而这个`dtor`会给已经存在的实例和将来创建的实例析构时候使用。  
-	两个flags值可以通过位操作“与”来组合。资源类型的名字对于调用模块是局部的。`module_str`是目前未使用，记得设为`NULL`。
+	两个flags值可以通过位操作“与”来组合。资源类型的名字对于调用模块是局部的。`module_str`是目前未使用，记得设为`NULL`。  
+	函数调用成功会返回一个指向资源类型的指针，然后`*tried`会被设成`ERL_NIF_RT_CREATE`或者`ERL_NIF_RT_TAKEOVER`去表明实际动作是什么。如果失败就返回`NULL`，并且把`*tried`赋值为`flags`的值。允许`tried`是`NULL`。  
+	
+	注意：该函数之允许在三个回调函数中调用（`load`,`reload`,`upgrade`）  
 	
 	
 	
@@ -325,31 +325,64 @@ NIF库所有函数有以下几种功能：
 	注意如果在`enif_make_resource`分配term之后马上调用`enif_release_resource`的话，在term被垃圾回收时候，该资源对象会马上释放。  
 	注意：在erlang编程里面，一个资源term只可以存储或者在同节点的不同进程间发送。其他操作如：匹配或者`term_to_binary`会有个不可以预知的结果。  
 	
-
-
-
-
+	
+* __int enif_keep_resource(void* obj)__  
+	对资源添加一个引用。该资源对象必须由`enif_alloc_resource`分配。  	
+	
+	
+* __int enif_alloc_binary(size_t size, ErlNifBinary* bin)__  
+	分配一个`size`个字节大小的二进制空间，初始化一个`ErlNifbinary`，把指针传入，会关联分配的空间。该二进制空间必须用`enif_release_binary`释放或者拥有者通过`enif_make_binary`转义成erlang的term。一个分配好空间的`ErlNifBinary`可以在多次NIF调用中保存下来。  
+	成功返回`true`，失败返回`false`。  
+	
+	
 * __int enif_inspect_binary(ErlNifEnv* env, ERL_NIF_TERM bin_term, ErlNifBinary* bin)__  
+	通过`bin_term`的信息初始化`bin`指向的结构体。成功返回`true`，如果`bin_term`不是一个binary会失败。  
+	
+	
 * __int enif_inspect_iolist_as_binary(ErlNifEnv* env, ERL_NIF_TERM term,ErlNifBinary* bin)__  
+	`term`是iolist，通过`term`初始化bin指向的结构体，跟`enif_inspect_binary`一样，`bin`指向的数据生命周期很短不需要手动释放。   
+	（这里我认为是将一个iolist的erlang字符串转换成一个erlang的binary字符串）   
+	成功返回`true`，如果`term`不是连续buffer会失败。   
 
 
-* __void *enif_priv_data(ErlNifEnv* env)__  
+
 * __int enif_realloc_binary(ErlNifBinary* bin, size_t size)__  
+	改变`bin`的大小。该binary可能是只读的，在这种情况下，会它会被抛弃，并且重新分配内存给`*bin`。（it will be left untouched and a
+mutable copy is allocated and assigned to *bin） ` 这里重新分配后的binary可以使erlang看来变量可变了。因为Erlang中的binary数据与NIF C中操作的是同一块内存的数据。`  
+
+
 * __void enif_release_binary(ErlNifBinary* bin)__  
+	释放binary。  
 
 
 
-
-* __unsigned enif_sizeof_resource(void* obj)__  
-* __void enif_system_info(ErlNifSysInfo *sys_info_ptr, size_t size)__  
-
+	
 * __ERL_NIF_TERM enif_make_binary(ErlNifEnv* env, ErlNifBinary* bin)__  
+	创建一个binary term。拥有权会移交给创建的term。而`bin`会被认为只读的(实际上你还可以操作的，这只是建议)。  
+	
+	
 * __unsigned char *enif_make_new_binary(ErlNifEnv* env, size_t size,ERL_NIF_TERM* termp)__  
+	分配`size`大小字节的内存并创建term。这个binary的数据在NIF返回之前都是可变的。这是个快速创建binary的方法。缺点是该binary不能在多次NIF调用里保存，而且不可以重新分配内存大小。  
+	
+	
+* __ERL_NIF_TERM enif_make_sub_binary(ErlNifEnv* env, ERL_NIF_TERM bin_term,size_t pos, size_t size)__  
+	复制部分binary来创建新的binary。`pos`是位置，`size`是长度。（是用来在C中模仿erlang的字符串binary操作的）  
+
 
 * __ERL_NIF_TERM enif_make_resource_binary(ErlNifEnv* env, void* obj, const void*data, size_t size)__  
-* __ERL_NIF_TERM enif_make_copy(ErlNifEnv* dst_env, ERL_NIF_TERM src_term)__  
-* __int enif_keep_resource(void* obj)__  
-* __ERL_NIF_TERM enif_make_sub_binary(ErlNifEnv* env, ERL_NIF_TERM bin_term,size_t pos, size_t size)__  
+	创建一个binary term，该binary term在被析构之前必须保持可读和不可变，可能会包含外部的资源对象，在这种情况下，析构函数里面就应该去释放那些对象。  
+	多个binary terms可能属于同一个资源对象，那么该析构函数不会被马上调用，直到最后一个binary被垃圾回收后。如果要返回一个大binary buffer的不同部分，这是一个好方法，  
+	该函数内，拥有权没有发送改变，该资源仍然需要`enif_release_resource`去释放。  
+	
+	
+* __void enif_system_info(ErlNifSysInfo *sys_info_ptr, size_t size)__  
+	该方法会写运行系统的信息到`ErlNifSysInfo`。  
+		
+	
+	
+
+
+
 
 #接口-线程操作类   <a name="exports-thread"></a> 
 	
@@ -411,7 +444,7 @@ NIF库所有函数有以下几种功能：
 	
 * __int enif_compare(ERL_NIF_TERM lhs, ERL_NIF_TERM rhs)__  
 	返回一个大于，等于，小于0整形数字来表示lhs 大于，等于，小于rhs。分别相当于erlang的运算符 ==,/=,=<,<,>,>=,>  (但不包括 =:=  和 =/=)。  
-	
+* __ERL_NIF_TERM enif_make_copy(ErlNifEnv* dst_env, ERL_NIF_TERM src_term)__  	
 * __int enif_get_atom(ErlNifEnv* env, ERL_NIF_TERM term, char* buf, unsigned size, ErlNifCharEncoding encode)__  
 
 * __int enif_get_atom_length(ErlNifEnv* env, ERL_NIF_TERM term, unsigned* len,ErlNifCharEncoding encode)__  
@@ -429,6 +462,7 @@ NIF库所有函数有以下几种功能：
 * __int enif_get_uint64(ErlNifEnv* env, ERL_NIF_TERM term, ErlNifUInt64* ip)__  
 * __int enif_get_ulong(ErlNifEnv* env, ERL_NIF_TERM term, unsigned long* ip)__  
 
+* __void *enif_priv_data(ErlNifEnv* env)__  
 
 * __类型判断，如果是该类型就返回true__  
 	int enif_is_atom(ErlNifEnv* env, ERL_NIF_TERM term)   
@@ -445,7 +479,7 @@ NIF库所有函数有以下几种功能：
 	int enif_is_list(ErlNifEnv* env, ERL_NIF_TERM term)  
 
 	
-
+* __unsigned enif_sizeof_resource(void* obj)__  
 
 * __ERL_NIF_TERM enif_make_atom(ErlNifEnv* env, const char* name)__  
 * __ERL_NIF_TERM enif_make_atom_len(ErlNifEnv* env, const char* name, size_t len)__  
