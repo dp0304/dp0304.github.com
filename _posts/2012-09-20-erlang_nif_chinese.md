@@ -9,7 +9,7 @@ tags: []
 
 ## 前言
   
-   这是翻译erlang官方文档中的 erts-5.9.2的erl_nif部分。尽量每日更新。（最后更新时间2012.12.31）
+   这是翻译erlang官方文档中的 erts-5.9.2的erl_nif部分。翻译完了。水平有限，我就把这个当作是我自己使用了，以后也会继续完善的。
 
 ## erlang nif 中文手册
 ---
@@ -325,7 +325,10 @@ NIF库所有函数有以下几种功能：
 	注意如果在`enif_make_resource`分配term之后马上调用`enif_release_resource`的话，在term被垃圾回收时候，该资源对象会马上释放。  
 	注意：在erlang编程里面，一个资源term只可以存储或者在同节点的不同进程间发送。其他操作如：匹配或者`term_to_binary`会有个不可以预知的结果。  
 	
+* __unsigned enif_sizeof_resource(void* obj)__  
+	取出资源的字节长度。  
 	
+		
 * __int enif_keep_resource(void* obj)__  
 	对资源添加一个引用。该资源对象必须由`enif_alloc_resource`分配。  	
 	
@@ -384,7 +387,70 @@ mutable copy is allocated and assigned to *bin） ` 这里重新分配后的bina
 
 
 
-#接口-线程操作类   <a name="exports-thread"></a> 
+#接口-线程操作类   <a name="exports-thread"></a>   
+	
+* __ErlNifThreadOpts *enif_thread_opts_create(char *name)__  
+	`name`用一个字符串来标识线程选项，将来可能用于debug 功能。  
+	该函数创建并初始化一个线程选项结构体。失败返回NULL。  
+	该方法线程安全。  
+	
+	
+* __void enif_thread_opts_destroy(ErlNifThreadOpts *opts)__  
+	销毁一个线程选项。  
+	该方法线程安全。  
+	
+	
+* __int enif_thread_create(char *name,ErlNifTid *tid,void * (*func)(void *),void *args,ErlNifThreadOpts *opts)__  
+	`name`用一个字符串来标识线程，将来可能用于debug 功能。  
+	`tid` 指向线程标识变量的指针。  
+	`func` 指向线程执行函数的指针。  
+	`opts` 指向线程选项或者`NULL`。  
+	成功返回0，反之一个`errno`值会返回。新创建的线程会调用`func`，而`arg`就是参数。  
+	`不允许自己分配空间给ErlNifThreadOpts，只能通过 erl_nif_thread_opts_create()去创建`  
+	该线程会在func执行返回或者调用`erl_nif_thread_exit`时候死亡。NIF在unload之前，创建的线程需要通过`erl_nif_thread_join`去加入线程。不可能存在‘分离在外’的线程。`如果没有加入成功，在NIF unload时候，整个系统可能会崩溃`。  
+	该方法线程安全。  
+	
+	
+* __void enif_thread_exit(void *resp)__  
+	该函数终结线程，退出值是`*resp`。而这个退出值可以在后来加入的线程重新操作。  
+	该方法线程安全。  
+	
+	
+* __int enif_thread_join(ErlNifTid, void **respp)__  
+	该方法是调用的线程跳入另外线程。例如：调用线程会阻塞，直到`tid`线程被终结。成功会返回0，失败返回`errno`对应错误。一个线程只能加入一次，如果多于一次，结果是未知的。如果`respp`为空，那么在退出线程时候就会被忽略，反之会存储下来。  
+	该方法线程安全。  
+	
+	
+* __ErlNifTid enif_thread_self(void)__  
+	返回调用线程的tid。  
+	该方法线程安全。  
+	
+	
+* __int enif_equal_tids(ErlNifTid tid1, ErlNifTid tid2)__  
+	对比两个线程标识是否相同，不相同返回0，相同返回非0.  
+	该方法线程安全。  
+	
+		
+* __int enif_tsd_key_create(char *name, ErlNifTSDKey *key)__  
+	创建一个线程特别的数据key。（key-value存储。先创建key）。在NIF unload前需要释放。  
+	该方法线程安全。  
+	
+	
+* __void enif_tsd_key_destroy(ErlNifTSDKey key)__  
+	释放一个key。  
+	该方法线程安全。  
+	
+	
+* __void *enif_tsd_get(ErlNifTSDKey key)__  
+	返回`key`对应的数据。如果没有数据关联，就返回NULL。  
+	该方法线程安全。  
+	
+	
+* __void enif_tsd_set(ErlNifTSDKey key, void *data)__  
+ 	声明关联`key`和`data`。  
+ 	该方法线程安全。  
+ 	
+
 	
 * __void enif_cond_create(ErlNifCond *cnd)__  	
 	通过一个字符串创建一个条件变量，返回一个指向这个变量的指针，时候返回`NULL`，NIF在unloaded之前需要把这个条件变量销毁。  
@@ -409,60 +475,92 @@ mutable copy is allocated and assigned to *bin） ` 这里重新分配后的bina
 	该函数通过条件变量去广播。如果其他线程等待这个这个信号，全部都会被唤醒。  
 	该方法线程安全。  
 	
-* __int enif_send(ErlNifEnv* env, ErlNifPid* to_pid, ErlNifEnv* msg_env,ERL_NIF_TERM msg)__  
-* __int enif_equal_tids(ErlNifTid tid1, ErlNifTid tid2)__  
-	对比两个线程标识是否相同，不相同返回0，相同返回非0.  
+	
+* __ErlNifPid *enif_self(ErlNifEnv* caller_env, ErlNifPid* pid)__ 	
+	把调用该函数的进程和`*pid`绑定，返回pid。  
 	该方法线程安全。  
+	
+* __int enif_send(ErlNifEnv* env, ErlNifPid* to_pid, ErlNifEnv* msg_env,ERL_NIF_TERM msg)__  
+	发送一个信息给一个进程。  
+	`env`是调用进程的环境，仅当如果是由一个线程发起调用时候把该值设为`NULL`。  
+	
+	`*to_pid` 指接收信息的进程，这个pid应该关联了一个本地节点。  
+	`msg_env` 发送的term所属的环境，必须是一个进程独立的环境（由`enif_alloc_env`分配）  
+	`msg` 要发送的信息term。  
+	如果成功就返回`true`，如果`*to_pid`并没有关联一个存活着的本地进程会返回`false`。  
+	如果成功调用后，`msg_env`的所有term都会变得无效，这时候应该调用`enif_free_env`或者`enif_clear_env`去释放或者重用。  
+	该方法只有在开启SMP支持后变得线程安全。在non-SMP模式下，只能由NIF调用的那个线程使用。  
+	
+	
 * __ErlNifMutex *enif_mutex_create(char *name)__  
+	通过一个字符串去创建一个互斥量。成功返回指向互斥量的指针。失败返回空，在NIF unload前需要释放它。  
+	该方法线程安全。  
+	
+	
 * __void enif_mutex_destroy(ErlNifMutex *mtx)__  
+	释放一个互斥量。  
+	该方法线程安全。  
+	
+	
 * __void enif_mutex_lock(ErlNifMutex *mtx)__  
+	锁住一个互斥量。调用线程会阻塞，直到锁住，如果一个线程当前已经锁住，不会再次加锁。  
+	该方法线程安全。  
+	
+	
 * __int enif_mutex_trylock(ErlNifMutex *mtx)__  
+	该函数尝试锁住一个互斥量，成功返回0，反之返回`EBUSY`。  
+	该方法线程安全。  
+	
+	
 * __void enif_mutex_unlock(ErlNifMutex *mtx)__  
+	解锁互斥量。  
+	该方法线程安全。  
+	
+	
+* __读写锁操作__  
+	ErlNifRWLock *enif_rwlock_create(char *name)  	
+	void enif_rwlock_destroy(ErlNifRWLock *rwlck)   
+	void enif_rwlock_rlock(ErlNifRWLock *rwlck)   
+	void enif_rwlock_runlock(ErlNifRWLock *rwlck)   
+	void enif_rwlock_rwlock(ErlNifRWLock *rwlck)   
+	void enif_rwlock_rwunlock(ErlNifRWLock *rwlck)  
+	int enif_rwlock_tryrlock(ErlNifRWLock *rwlck)  
+	int enif_rwlock_tryrwlock(ErlNifRWLock *rwlck)  
 
-* __ErlNifRWLock *enif_rwlock_create(char *name)__  
-* __void enif_rwlock_destroy(ErlNifRWLock *rwlck)__  
-* __void enif_rwlock_rlock(ErlNifRWLock *rwlck)__  
-* __void enif_rwlock_runlock(ErlNifRWLock *rwlck)__  
-* __void enif_rwlock_rwlock(ErlNifRWLock *rwlck)__  
-* __void enif_rwlock_rwunlock(ErlNifRWLock *rwlck)__  
-* __int enif_rwlock_tryrlock(ErlNifRWLock *rwlck)__  
-* __int enif_rwlock_tryrwlock(ErlNifRWLock *rwlck)__  
-
-* __int enif_thread_create(char *name,ErlNifTid *tid,void * (*func)(void *),void *args,ErlNifThreadOpts *opts)__  
-* __void enif_thread_exit(void *resp)__  
-* __int enif_thread_join(ErlNifTid, void **respp)__  
-* __ErlNifThreadOpts *enif_thread_opts_create(char *name)__  
-* __void enif_thread_opts_destroy(ErlNifThreadOpts *opts)__  
-* __ErlNifTid enif_thread_self(void)__  
-* __int enif_tsd_key_create(char *name, ErlNifTSDKey *key)__  
-* __void enif_tsd_key_destroy(ErlNifTSDKey key)__  
-* __void *enif_tsd_get(ErlNifTSDKey key)__  
-* __void enif_tsd_set(ErlNifTSDKey key, void *data)__  
-* __ErlNifPid *enif_self(ErlNifEnv* caller_env, ErlNifPid* pid)__  	
+ 	
 
 #接口-类型操作类   <a name="exports-type"></a> 
 	
 * __int enif_compare(ERL_NIF_TERM lhs, ERL_NIF_TERM rhs)__  
 	返回一个大于，等于，小于0整形数字来表示lhs 大于，等于，小于rhs。分别相当于erlang的运算符 ==,/=,=<,<,>,>=,>  (但不包括 =:=  和 =/=)。  
+	
+	
 * __ERL_NIF_TERM enif_make_copy(ErlNifEnv* dst_env, ERL_NIF_TERM src_term)__  	
+	在`dst_env`环境中创建一个复制`src_term`。  
+	
+	
 * __int enif_get_atom(ErlNifEnv* env, ERL_NIF_TERM term, char* buf, unsigned size, ErlNifCharEncoding encode)__  
+	在`size`大小的`buf`里面写入一个结束符。由term译码后变成字符组成，返回字节数。如果term不是一个长度为`size`-1的atom就返回0.  
+	
+* __取term中的值，并赋值到一个参数中（看参数里面哪个同类型的，就是赋值给它的了），成功返回ture，失败返回false__  
+	int enif_get_atom_length(ErlNifEnv* env, ERL_NIF_TERM term, unsigned* len,ErlNifCharEncoding encode)  
+	int enif_get_double(ErlNifEnv* env, ERL_NIF_TERM term, double* dp)  
+	int enif_get_int(ErlNifEnv* env, ERL_NIF_TERM term, int* ip)  
+	int enif_get_int64(ErlNifEnv* env, ERL_NIF_TERM term, ErlNifSInt64* ip)  
+	int enif_get_local_pid(ErlNifEnv* env, ERL_NIF_TERM term, ErlNifPid* pid)  
+	int enif_get_list_cell(ErlNifEnv* env, ERL_NIF_TERM list, ERL_NIF_TERM* head,ERL_NIF_TERM* tail)  
+	int enif_get_list_length(ErlNifEnv* env, ERL_NIF_TERM term, unsigned* len)  
+	int enif_get_long(ErlNifEnv* env, ERL_NIF_TERM term, long int* ip)  
+	int enif_get_resource(ErlNifEnv* env, ERL_NIF_TERM term, ErlNifResourceType* type, void** objp)  
+	int enif_get_string(ErlNifEnv* env, ERL_NIF_TERM list, char* buf, unsigned size, ErlNifCharEncoding encode)  
+	int enif_get_tuple(ErlNifEnv* env, ERL_NIF_TERM term, int* arity, const ERL_NIF_TERM** array)  
+	int enif_get_uint(ErlNifEnv* env, ERL_NIF_TERM term, unsigned int* ip)  
+	int enif_get_uint64(ErlNifEnv* env, ERL_NIF_TERM term, ErlNifUInt64* ip)  
+	int enif_get_ulong(ErlNifEnv* env, ERL_NIF_TERM term, unsigned long* ip)  
 
-* __int enif_get_atom_length(ErlNifEnv* env, ERL_NIF_TERM term, unsigned* len,ErlNifCharEncoding encode)__  
-* __int enif_get_double(ErlNifEnv* env, ERL_NIF_TERM term, double* dp)__  
-* __int enif_get_int(ErlNifEnv* env, ERL_NIF_TERM term, int* ip)__  
-* __int enif_get_int64(ErlNifEnv* env, ERL_NIF_TERM term, ErlNifSInt64* ip)__  
-* __int enif_get_local_pid(ErlNifEnv* env, ERL_NIF_TERM term, ErlNifPid* pid)__  
-* __int enif_get_list_cell(ErlNifEnv* env, ERL_NIF_TERM list, ERL_NIF_TERM* head,ERL_NIF_TERM* tail)__  
-* __int enif_get_list_length(ErlNifEnv* env, ERL_NIF_TERM term, unsigned* len)__  
-* __int enif_get_long(ErlNifEnv* env, ERL_NIF_TERM term, long int* ip)__  
-* __int enif_get_resource(ErlNifEnv* env, ERL_NIF_TERM term, ErlNifResourceType* type, void** objp)__  
-* __int enif_get_string(ErlNifEnv* env, ERL_NIF_TERM list, char* buf, unsigned size, ErlNifCharEncoding encode)__  
-* __int enif_get_tuple(ErlNifEnv* env, ERL_NIF_TERM term, int* arity, const ERL_NIF_TERM** array)__  
-* __int enif_get_uint(ErlNifEnv* env, ERL_NIF_TERM term, unsigned int* ip)__  
-* __int enif_get_uint64(ErlNifEnv* env, ERL_NIF_TERM term, ErlNifUInt64* ip)__  
-* __int enif_get_ulong(ErlNifEnv* env, ERL_NIF_TERM term, unsigned long* ip)__  
 
 * __void *enif_priv_data(ErlNifEnv* env)__  
+	返回之前在load，reload或者upgrade设置的私有数据的指针。  
 
 * __类型判断，如果是该类型就返回true__  
 	int enif_is_atom(ErlNifEnv* env, ERL_NIF_TERM term)   
@@ -479,34 +577,32 @@ mutable copy is allocated and assigned to *bin） ` 这里重新分配后的bina
 	int enif_is_list(ErlNifEnv* env, ERL_NIF_TERM term)  
 
 	
-* __unsigned enif_sizeof_resource(void* obj)__  
 
-* __ERL_NIF_TERM enif_make_atom(ErlNifEnv* env, const char* name)__  
-* __ERL_NIF_TERM enif_make_atom_len(ErlNifEnv* env, const char* name, size_t len)__  
-* __ERL_NIF_TERM enif_make_badarg(ErlNifEnv* env)__  
+* __创建一个term，第一个参数是环境，后面参数是term的值的来源和条件__  
+	ERL_NIF_TERM enif_make_atom(ErlNifEnv* env, const char* name)  
+	ERL_NIF_TERM enif_make_atom_len(ErlNifEnv* env, const char* name, size_t len)  
+	ERL_NIF_TERM enif_make_badarg(ErlNifEnv* env)  
+	ERL_NIF_TERM enif_make_double(ErlNifEnv* env, double d)  
+	int enif_make_existing_atom(ErlNifEnv* env, const char* name, ERL_NIF_TERM* atom, ErlNifCharEncoding encode)  
+	int enif_make_existing_atom_len(ErlNifEnv* env, const char* name, size_t len,ERL_NIF_TERM* atom, ErlNifCharEncoding encoding)  
+	ERL_NIF_TERM enif_make_int(ErlNifEnv* env, int i)  
+	ERL_NIF_TERM enif_make_int64(ErlNifEnv* env, ErlNifSInt64 i)  
+	ERL_NIF_TERM enif_make_list(ErlNifEnv* env, unsigned cnt, ...)  
+	ERL_NIF_TERM enif_make_list_cell(ErlNifEnv* env, ERL_NIF_TERM head,ERL_NIF_TERM tail)  
+	ERL_NIF_TERM enif_make_list_from_array(ErlNifEnv* env, const ERL_NIF_TERM arr[], unsigned cnt)  
+	int enif_make_reverse_list(ErlNifEnv* env, ERL_NIF_TERM term, ERL_NIF_TERM *list)  
+	ERL_NIF_TERM enif_make_long(ErlNifEnv* env, long int i)  
 
-* __ERL_NIF_TERM enif_make_double(ErlNifEnv* env, double d)__  
-* __int enif_make_existing_atom(ErlNifEnv* env, const char* name, ERL_NIF_TERM* atom, ErlNifCharEncoding encode)__  
-* __int enif_make_existing_atom_len(ErlNifEnv* env, const char* name, size_t len,ERL_NIF_TERM* atom, ErlNifCharEncoding encoding)__  
-* __ERL_NIF_TERM enif_make_int(ErlNifEnv* env, int i)__  
-* __ERL_NIF_TERM enif_make_int64(ErlNifEnv* env, ErlNifSInt64 i)__  
-* __ERL_NIF_TERM enif_make_list(ErlNifEnv* env, unsigned cnt, ...)__  
-* __ERL_NIF_TERM enif_make_list_cell(ErlNifEnv* env, ERL_NIF_TERM head,ERL_NIF_TERM tail)__  
-* __ERL_NIF_TERM enif_make_list_from_array(ErlNifEnv* env, const ERL_NIF_TERM arr[], unsigned cnt)__  
-* __int enif_make_reverse_list(ErlNifEnv* env, ERL_NIF_TERM term, ERL_NIF_TERM *list)__  
-* __ERL_NIF_TERM enif_make_long(ErlNifEnv* env, long int i)__  
+	ERL_NIF_TERM enif_make_pid(ErlNifEnv* env, const ErlNifPid* pid)  
+	ERL_NIF_TERM enif_make_ref(ErlNifEnv* env)  
 
-* __ERL_NIF_TERM enif_make_pid(ErlNifEnv* env, const ErlNifPid* pid)__  
-* __ERL_NIF_TERM enif_make_ref(ErlNifEnv* env)__  
-
-* __ERL_NIF_TERM enif_make_string(ErlNifEnv* env, const char* string,ErlNifCharEncoding encoding)__  
-* __ERL_NIF_TERM enif_make_string_len(ErlNifEnv* env, const char* string, size_t len, ErlNifCharEncoding encoding)__  
-
-* __ERL_NIF_TERM enif_make_tuple(ErlNifEnv* env, unsigned cnt, ...)__  
-* __ERL_NIF_TERM enif_make_tuple_from_array(ErlNifEnv* env, const ERL_NIF_TERM arr[], unsigned cnt)__  
-* __ERL_NIF_TERM enif_make_uint(ErlNifEnv* env, unsigned int i)__  
-* __ERL_NIF_TERM enif_make_uint64(ErlNifEnv* env, ErlNifUInt64 i)__  
-* __ERL_NIF_TERM enif_make_ulong(ErlNifEnv* env, unsigned long i)__  
+	ERL_NIF_TERM enif_make_string(ErlNifEnv* env, const char* string,ErlNifCharEncoding encoding)  
+	ERL_NIF_TERM enif_make_string_len(ErlNifEnv* env, const char* string, size_t len, ErlNifCharEncoding encoding)  
+	ERL_NIF_TERM enif_make_tuple(ErlNifEnv* env, unsigned cnt, ...)  
+	ERL_NIF_TERM enif_make_tuple_from_array(ErlNifEnv* env, const ERL_NIF_TERM arr[], unsigned cnt)  
+	ERL_NIF_TERM enif_make_uint(ErlNifEnv* env, unsigned int i)  
+	ERL_NIF_TERM enif_make_uint64(ErlNifEnv* env, ErlNifUInt64 i)  
+	ERL_NIF_TERM enif_make_ulong(ErlNifEnv* env, unsigned long i)  
 
 
 
