@@ -73,16 +73,16 @@ FingerGestures是一个unity3D插件，用来处理用户动作，手势。
 
 * __Toolbox（工具箱）__  
 	__Camera（放入摄像机的脚本）：__  
-		__Toolbox-DragView:__ 展示使用`TBDragView `脚本，实现拖动视角。  
-		__Toolbox-Orbit:__ 展示使用`TBOrbit`脚本，实现围绕目标旋转视角。  
-		__Toolbox-Pan:__ 展示使用`TBPan`脚本，实现以自身为轴旋转视角。  
-		__Toolbox-PinchZoom:__ 展示使用`TBPinchZoom`脚本，实现变焦。  
+	Toolbox-DragView:  展示使用`TBDragView `脚本，实现拖动视角。  
+	Toolbox-Orbit:     展示使用`TBOrbit`脚本，实现围绕目标旋转视角。  
+	Toolbox-Pan:       展示使用`TBPan`脚本，实现以自身为轴旋转视角。  
+	Toolbox-PinchZoom: 展示使用`TBPinchZoom`脚本，实现变焦。  
 
 	__Object-Based（放入普通场景对象的脚本）：__  
-		__Toolbox-Drag:__ 展示使用`TBDrag `脚本，实现简单的物体拖动  
-		__Toolbox-Hover:__ 展示使用`TBHoverChangeMaterial ` 和 `TBHoverChangeScale `脚本，实现当鼠标或者手指悬停在物体上时候的响应。（PS：类似鼠标放到图标上，图标发亮的效果）   
-		__Toolbox-PinchToScale__ 展示使用`TBPinchToScale `脚本，实现缩放物体  
-		__Toolbox-TwistToRotate:__ 展示使用`TBTwistToRotate `脚本，实现旋转物体    
+	Toolbox-Drag:          展示使用`TBDrag `脚本，实现简单的物体拖动  
+	Toolbox-Hover:         展示使用`TBHoverChangeMaterial ` 和 `TBHoverChangeScale `脚本，实现当鼠标或者手指悬停在物体上时候的响应。（PS：类似鼠标放到图标上，图标发亮的效果）   
+	Toolbox-PinchToScale   展示使用`TBPinchToScale `脚本，实现缩放物体  
+	Toolbox-TwistToRotate: 展示使用`TBTwistToRotate `脚本，实现旋转物体    
  	
 
 ##设置场景   <a name="setting_up"></a> 
@@ -130,6 +130,8 @@ FingerGestures是一个unity3D插件，用来处理用户动作，手势。
                     ". It was sent by " + gesture.Recognizer.name );
         }  
     `gesture`参数包含着手势事件数据，在上面的代码，我们主要输出了位置和`TapRecognizer`内工作的事件。你还可以在`gesture`参数内获得更多属性，例如通过`gesture.Fingers`获得鼠标或手指相关的手势列表，还有可以通过`gesture.Selection`获得当前是哪个场景被轻敲 。  
-    第四步，可以测试，通过敲不同位置，可以看到debug信息输出。  
+    第四步，可以测试，通过敲不同位置，可以看到debug信息输出。 
+
+ --未完2013 07 29 
 
 
