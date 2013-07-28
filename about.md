@@ -66,14 +66,17 @@ csdn，github，twitter，googleplus，微博，qq，stack overflow，人人小�
 
 ## what did I done    <a name="what"></a>
 
-我确实做过点项目，只是不想啰嗦咯
+2012之前我确实做过点项目，只是不想啰嗦咯  
+
+2013在和同学一起做webgame
+
 
 ## what I want to do   <a name="want"></a>
 not for money，but for fun
 
 ## where am I come form  <a name="where"></a>
 
-2012.6毕业了~~~	
+2013.6毕业了~~~	
   
 留下以前blog的地址  
 [dp0304](http://blog.csdn.net/dp0304)  
