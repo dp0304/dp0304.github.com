@@ -406,3 +406,27 @@ div.sidebar section img.icon {
   -o-border-radius: 5px;
   border-radius: 5px;
 }
+
+
+.line-numbers .line-number {
+width: 22px;
+}
+ 
+.line-numbers {
+background: #ececec;
+}
+ 
+
+
+
+.gist .gist-file .gist-data {
+overflow: auto;
+word-wrap: normal;
+background-color: #2a2a2a!important;
+border-bottom: 1px solid #ddd;
+
+  font-size: 14px!important;
+  color: inherit!important;
+  line-height: 24px!important;
+  font-family: Menlo,Monaco,Consolas,"Courier New",monospace!important;
+}
