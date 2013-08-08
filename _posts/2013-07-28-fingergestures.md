@@ -1,13 +1,13 @@
 ---
 layout: post
-title: "FingerGestures插件"
+title: "unity3D的FingerGestures插件"
 description: ""
 category: unity3d
 tags: []
 ---
 {% include JB/setup %}
 
-FingerGestures是一个unity3D插件，用来处理用户动作，手势。  
+FingerGestures是一个unity3D插件，用来处理用户动作，手势。  译自[FingerGestures官方文档](http://fingergestures.fatalfrog.com/docs/manual:start) 
 
 ## 目录
 ---
@@ -15,12 +15,15 @@ FingerGestures是一个unity3D插件，用来处理用户动作，手势。
 * [FingerGestures例子列表][]
 * [设置场景][]
 * [教程：识别一个轻敲手势][]
+* [教程：识别手势][]
 
 [FingerGestures包结构]: #package_content
 [FingerGestures例子列表]: #samples-list
 [设置场景]: #setting_up
 [教程：识别一个轻敲手势]: #tap_gesture
+[教程：识别手势]: #detecting_gesture
 -----
+
 
 ##fingerGestures包结构   <a name="package_ontent"></a>     
 <table class="table  table-striped  table-condensed">
@@ -130,8 +133,25 @@ FingerGestures是一个unity3D插件，用来处理用户动作，手势。
                     ". It was sent by " + gesture.Recognizer.name );
         }  
     `gesture`参数包含着手势事件数据，在上面的代码，我们主要输出了位置和`TapRecognizer`内工作的事件。你还可以在`gesture`参数内获得更多属性，例如通过`gesture.Fingers`获得鼠标或手指相关的手势列表，还有可以通过`gesture.Selection`获得当前是哪个场景被轻敲 。  
-    第四步，可以测试，通过敲不同位置，可以看到debug信息输出。 
+    第四步，可以测试，通过敲不同位置，可以看到debug信息输出。   
 
- --未完2013 07 29 
+
+##教程：识别手势   <a name="detecting_gesture"></a>   
+在FingerGesture里，用户的手势都由`GestureRecognizers`组件来处理，它是顺序处理被识别匹配的用户动作的。   
+	
+	
+* __找到GestureRecognizers__   	 
+	每种手势都有自己的脚本，存放脚本的路径在`Plugins\FingerGestures\Scripts\Gesture Recognizers` 。
+	![1](/image/fingergestures/gesture_recognizers_folder.png)   
+	你也可以从 `Component > FingerGestures > Gestures menu`里面找到。   
+	![1](/image/fingergestures/fingergesture_menu_gestures.png)     
+
+* __基本使用__		
+	要识别一个特殊手势，你需要：  
+	1、添加对应的`GestureRecognizer `组件到场景中的目标物件。    
+	2、配置它的属性。   
+	3、监听它的手势事件和对应响应。
+
+ --未完2013 08 08
 
 
