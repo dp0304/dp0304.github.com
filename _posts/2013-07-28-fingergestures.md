@@ -160,8 +160,25 @@ FingerGestures是一个unity3D插件，用来处理用户动作，手势。  译
 		手势事件将会被广播到游戏对象里所有的组件。   
 		手势事件也可以指向当前相关的场景对象，这时候需要把手势识别器配置到 `Raycaster `组件中才能检测场景对象。   
 
-	这取决于你的选择。.net的事件模型较为高效，unity的`SendMessage()`较为方便。 
+	这取决于你的选择。.net的事件模型较为高效，unity的`SendMessage()`较为方便。
 
- --未完2013 08 09
+
+* __属性__    
+	 由同一基类派生出来的各种手势识别器共用一个通用配置和一些函数。例如，我们可以看到`TapRecognizer `和`SwipeRecognizer `组件的配置放置在同一个对象里。  
+	 ![1](/image/fingergestures/gesture_recognizer_properties_swipe_tap.png)     
+	 设置：    
+	 	你可以看到，两个组件共用了一部分配置:`fingers setup`,`reset mode`,`event notification settings`,`references to additional components`...     
+	 	同样，每个手势识别器都有自己独特的配置，例如滑动识别器要设置距离阀值、速度、和偏差。而多点触控可以设置最大持续时间等。
+
+	 事件信息广播：     
+	 	此处使用`SendMessage() `函数去通知其他系统。你可以使用`Message Name`属性去指定响应的函数名。     
+	 	通常，`Message Target`会设置你加入的手势识别器组件。但你也可以设置别的对象。   
+
+	 组件：    
+	 	你可以收到手动指定添加组件。例如：添加一个`ScreenRaycaster `组件让手势识别器获知场景内对象碰撞。并把消息发送到相应的监听器。它允许识别器转发消息到正在有关联的场景对象。    
+
+	 	
+
+ --未完2013 08 12
 
 
