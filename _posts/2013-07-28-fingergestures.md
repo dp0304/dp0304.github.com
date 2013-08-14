@@ -15,15 +15,32 @@ FingerGestures是一个unity3D插件，用来处理用户动作，手势。  译
 * [FingerGestures例子列表][]
 * [设置场景][]
 * [教程：识别一个轻敲手势][]
-* [教程：识别手势][]
+* [教程：手势识别器][]
+* [教程：轻击手势识别器][]
+* [教程：拖拽手势识别器][]
+* [教程：滑动手势识别器][]
+* [教程：长按手势识别器][]
+* [教程：缩放手势识别器][]
+* [教程：旋转手势识别器][]
+
 
 [FingerGestures包结构]: #package_content
 [FingerGestures例子列表]: #samples-list
 [设置场景]: #setting_up
 [教程：识别一个轻敲手势]: #tap_gesture
-[教程：识别手势]: #detecting_gesture
+[教程：手势识别器]: #detecting_gesture
+[教程：轻击手势识别器]: #detecting_tap_gesture
+[教程：拖拽手势识别器]: #detecting_drag_gesture
+[教程：滑动手势识别器]: #detecting_swipe_gesture
+[教程：长按手势识别器]: #detecting_long_press_gesture
+[教程：缩放手势识别器]: #detecting_pinch_gesture
+[教程：旋转手势识别器]: #detecting_twist_gesture
+
+
+
 -----
 
+  
 
 ##fingerGestures包结构   <a name="package_ontent"></a>     
 <table class="table  table-striped  table-condensed">
@@ -136,7 +153,7 @@ FingerGestures是一个unity3D插件，用来处理用户动作，手势。  译
     第四步，可以测试，通过敲不同位置，可以看到debug信息输出。   
 
 
-##教程：识别手势   <a name="detecting_gesture"></a>   
+##教程：手势识别器   <a name="detecting_gesture"></a>   
 在FingerGesture里，用户的手势都由`GestureRecognizers`组件来处理，它是顺序处理被识别匹配的用户动作的。   
 	
 	
@@ -167,18 +184,137 @@ FingerGestures是一个unity3D插件，用来处理用户动作，手势。  译
 	 由同一基类派生出来的各种手势识别器共用一个通用配置和一些函数。例如，我们可以看到`TapRecognizer `和`SwipeRecognizer `组件的配置放置在同一个对象里。  
 	 ![1](/image/fingergestures/gesture_recognizer_properties_swipe_tap.png)     
 	 设置：    
-	 	你可以看到，两个组件共用了一部分配置:`fingers setup`,`reset mode`,`event notification settings`,`references to additional components`...     
-	 	同样，每个手势识别器都有自己独特的配置，例如滑动识别器要设置距离阀值、速度、和偏差。而多点触控可以设置最大持续时间等。
+	 你可以看到，两个组件共用了一部分配置:`fingers setup`,`reset mode`,`event notification settings`,`references to additional components`...     
+	 同样，每个手势识别器都有自己独特的配置，例如滑动识别器要设置距离阀值、速度、和偏差。而多点触控可以设置最大持续时间等。
 
 	 事件信息广播：     
-	 	此处使用`SendMessage() `函数去通知其他系统。你可以使用`Message Name`属性去指定响应的函数名。     
-	 	通常，`Message Target`会设置你加入的手势识别器组件。但你也可以设置别的对象。   
+	 此处使用`SendMessage() `函数去通知其他系统。你可以使用`Message Name`属性去指定响应的函数名。     
+	 通常，`Message Target`会设置你加入的手势识别器组件。但你也可以设置别的对象。   
 
 	 组件：    
-	 	你可以收到手动指定添加组件。例如：添加一个`ScreenRaycaster `组件让手势识别器获知场景内对象碰撞。并把消息发送到相应的监听器。它允许识别器转发消息到正在有关联的场景对象。    
+	 你可以收到手动指定添加组件。例如：添加一个`ScreenRaycaster `组件让手势识别器获知场景内对象碰撞。并把消息发送到相应的监听器。它允许识别器转发消息到正在有关联的场景对象。    
 
-	 	
+##教程：轻击手势识别器   <a name="detecting_tap_gesture"></a>      
+![1](/image/fingergestures/tap_recognizer.png)     
 
- --未完2013 08 12
+* __属性__   
+	`Required Taps` ：连续轻击的次数。    
+	`Max Delay Between Taps`  :两次轻击间最大的时间间隔。（秒）    
+	`Movement Tolerance`：连续轻敲时候，和第一次轻击的位置相隔的偏差大小。    
+	`Max Duration`：最大可以识别的手指数。   
+	
+* __事件__     
+
+        void OnTap( TapGesture gesture )
+            {
+            	// 轻击的数量
+            	int taps = gesture.Taps;
+            }
+
+ 
+##教程：拖拽手势识别器   <a name="detecting_drag_gesture"></a> 
+![1](/image/fingergestures/drag_recognizer.png) 
+* __属性__      
+	`Movement Tolerance`：最小的拖动距离才触发识别器。   
+	`Apply Same Direction Constraint`：只能用于多点拖拽，打开后，如果所有点不是向同一个方向拖拽，识别器将不会识别。  
+
+* __事件__   
+	
+       	void OnDrag( DragGesture gesture ) 
+        {
+            // 当前识别器阶段 (Started/Updated/Ended)
+            ContinuousGesturePhase phase = gesture.Phase;
+ 
+            // 最后一帧的拖拽/移动数据
+            Vector2 deltaMove = gesture.DeltaMove;
+ 
+            //完整的拖拽数据
+            Vector2 totalMove = gesture.TotalMove;
+        }
+
+
+##教程：滑动手势识别器   <a name="detecting_swipe_gesture"></a>     
+![1](/image/fingergestures/swipe_recognizer.png) 
+* __属性__    
+	`Min Distance`: 必须滑动的最小距离。   
+	`Max Distance`：允许滑动的最大距离。   
+	`Min Velocity`：滑动时候最小速度。  
+	`Max Deviation`：允许的最大角度偏差。（度）    
+
+* __事件__     
+	
+		void OnSwipe( SwipeGesture gesture ) 
+        {
+            // 完整的滑动数据
+            Vector2 move = gesture.Move;
+ 
+            // 滑动的速度
+            float velocity = gesture.Velocity;
+ 
+            // 大概的滑动方向
+            FingerGestures.SwipeDirection direction = gesture.Direction;
+        }
+
+
+##教程：长按手势识别器   <a name="detecting_long_press_gesture"></a>     
+![1](/image/fingergestures/longpress_recognizer.png) 
+* __属性__      
+	`Press Duration`：最少长按时间。    
+	`Move Tolerance`:长按过程中允许的最大移动偏差。   
+
+* __事件__     
+	
+		void OnLongPress( LongPressGesture gesture ) 
+		{
+		    // 长按持续时间
+		    float elapsed = gesture.ElapsedTime;
+		}
+
+
+##教程：缩放手势识别器   <a name="detecting_pinch_gesture"></a>     
+![1](/image/fingergestures/pinch_recognizer.png) 
+* __属性__     
+	`Minimum DOT`  ：允许的小向量点积。   
+	`Minimum Distance`:两个手指第一次触屏时候允许的最短路径。   
+
+* __事件__   
+		void OnPinch( PinchGesture gesture ) 
+		{
+		    // 识别器当前状态(Started/Updated/Ended)
+		    ContinuousGesturePhase phase = gesture.Phase;
+ 
+		    // 当前两个手指的距离
+		    float gap = gesture.Gap;
+ 
+		    // 当前与上一帧的变动值 
+		    float delta = gesture.Delta;
+		}
+
+
+##教程：旋转手势识别器   <a name="detecting_twist_gesture"></a>     
+![1](/image/fingergestures/twist_recognizer.png) 
+* __属性__      
+	`Minimum DOT`  ：允许的小向量点积。    
+	`Minimum Rotation`:必须的最小自旋角度。  
+
+* __事件__   
+
+		void OnTwist( TwistGesture gesture ) 
+		{
+		    // 识别器当前状态 (Started/Updated/Ended)
+		    ContinuousGesturePhase phase = gesture.Phase;
+		 
+		    // 最近一次角度变化（度）
+		    float delta = gesture.DeltaRotation;
+		 
+		    // 总的角度变化（度）  
+		    float total = gesture.TotalRotation;
+		}     
+
+* __桌面仿真__   	
+	在桌面环境，你可以通过`left-CTRL`键加上鼠标转轮去调节角度。也可以在`Mouse Input Provider`配置别的按键。   
+
+
+ --未完2013 08 14
 
 
