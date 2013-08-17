@@ -22,6 +22,7 @@ FingerGestures是一个unity3D插件，用来处理用户动作，手势。  译
 * [教程：长按手势识别器][]
 * [教程：缩放手势识别器][]
 * [教程：旋转手势识别器][]
+* [教程：自定义手势识别器][]
 
 
 [FingerGestures包结构]: #package_content
@@ -35,7 +36,7 @@ FingerGestures是一个unity3D插件，用来处理用户动作，手势。  译
 [教程：长按手势识别器]: #detecting_long_press_gesture
 [教程：缩放手势识别器]: #detecting_pinch_gesture
 [教程：旋转手势识别器]: #detecting_twist_gesture
-
+[教程：自定义手势识别器]: #detecting_custom_gesture
 
 
 -----
@@ -197,7 +198,7 @@ FingerGestures是一个unity3D插件，用来处理用户动作，手势。  译
 ##教程：轻击手势识别器   <a name="detecting_tap_gesture"></a>      
 ![1](/image/fingergestures/tap_recognizer.png)     
 
-* __属性__   
+* __属性__     
 	`Required Taps` ：连续轻击的次数。    
 	`Max Delay Between Taps`  :两次轻击间最大的时间间隔。（秒）    
 	`Movement Tolerance`：连续轻敲时候，和第一次轻击的位置相隔的偏差大小。    
@@ -213,7 +214,8 @@ FingerGestures是一个unity3D插件，用来处理用户动作，手势。  译
 
  
 ##教程：拖拽手势识别器   <a name="detecting_drag_gesture"></a> 
-![1](/image/fingergestures/drag_recognizer.png) 
+![1](/image/fingergestures/drag_recognizer.png)    
+
 * __属性__      
 	`Movement Tolerance`：最小的拖动距离才触发识别器。   
 	`Apply Same Direction Constraint`：只能用于多点拖拽，打开后，如果所有点不是向同一个方向拖拽，识别器将不会识别。  
@@ -234,7 +236,8 @@ FingerGestures是一个unity3D插件，用来处理用户动作，手势。  译
 
 
 ##教程：滑动手势识别器   <a name="detecting_swipe_gesture"></a>     
-![1](/image/fingergestures/swipe_recognizer.png) 
+![1](/image/fingergestures/swipe_recognizer.png)    
+
 * __属性__    
 	`Min Distance`: 必须滑动的最小距离。   
 	`Max Distance`：允许滑动的最大距离。   
@@ -257,7 +260,8 @@ FingerGestures是一个unity3D插件，用来处理用户动作，手势。  译
 
 
 ##教程：长按手势识别器   <a name="detecting_long_press_gesture"></a>     
-![1](/image/fingergestures/longpress_recognizer.png) 
+![1](/image/fingergestures/longpress_recognizer.png)    
+
 * __属性__      
 	`Press Duration`：最少长按时间。    
 	`Move Tolerance`:长按过程中允许的最大移动偏差。   
@@ -272,7 +276,8 @@ FingerGestures是一个unity3D插件，用来处理用户动作，手势。  译
 
 
 ##教程：缩放手势识别器   <a name="detecting_pinch_gesture"></a>     
-![1](/image/fingergestures/pinch_recognizer.png) 
+![1](/image/fingergestures/pinch_recognizer.png)     
+
 * __属性__     
 	`Minimum DOT`  ：允许的小向量点积。   
 	`Minimum Distance`:两个手指第一次触屏时候允许的最短路径。   
@@ -292,7 +297,8 @@ FingerGestures是一个unity3D插件，用来处理用户动作，手势。  译
 
 
 ##教程：旋转手势识别器   <a name="detecting_twist_gesture"></a>     
-![1](/image/fingergestures/twist_recognizer.png) 
+![1](/image/fingergestures/twist_recognizer.png)    
+
 * __属性__      
 	`Minimum DOT`  ：允许的小向量点积。    
 	`Minimum Rotation`:必须的最小自旋角度。  
@@ -314,7 +320,36 @@ FingerGestures是一个unity3D插件，用来处理用户动作，手势。  译
 * __桌面仿真__   	
 	在桌面环境，你可以通过`left-CTRL`键加上鼠标转轮去调节角度。也可以在`Mouse Input Provider`配置别的按键。   
 
+##教程：自定义手势识别器   <a name="detecting_custom_gesture"></a>      
+	自从FingerGestures 3.0之后，可以通过`PointCloudRecognizer`识别自定义手势。利用基于[$P recognizer](http://depts.washington.edu/aimgroup/proj/dollar/pdollar.html) 是手势匹配算法实现。现在只支持单手指操作的识别，将来会支持多点自定义手势。      
+	![1](/image/fingergestures/customgesturesample.png)      
+	点云识别器会对比用户输入和已经设置好的手势模板，然后会返回最近接近的匹配结果，会返回匹配得分和差距值。   
+	点云识别器是规模和方向固定不变的，这就意味着它可以识别画得比较大或者小的，也或者是反方向的（李若：从左到右变成从右到左）。     
 
- --未完2013 08 14
+*__点云识别器模板__     
+	一个模板包括要识别的手势的数据。是通过一个编辑器编辑的。    
+	![1](/image/fingergestures/pointcloud_template_loop.png)      
+	创建一个模板需要以下步骤：      
+	1：在你的项目编码，右击-> create ->PonitCloud Gesture Template       
+	![1](/image/fingergestures/create_pointcloud_template.png)        
+	一个新的模板就好添加到项目里面，可以自己重命名。    
+	2：选择模板然后在 Inspecrot 面板内点击 Edit。    
+	![1](/image/fingergestures/new_pointcloud_template.png)      
+	3：然后开始画图案。    
+	![1](/image/fingergestures/gesture_template_inspector_updated.png)      
+
+*__使用点云识别器__      
+ 	第一步：     
+ 	1：保证场景对象已经设置好了finger gesture的属性。    
+ 	2：创建一个新的`Gestures`对象。    
+ 	3：添加一个`PointCloudRecognizer`组件。   
+ 	![1](/image/fingergestures/pointcloudrecognizer1.png)      
+ 	以下属性需要特别注意。    
+ 	`Max Match Distance`：控制识别的精确的程度。数值越低，越精确。    
+ 	`Sampling Distance`: 连贯动作取样时候，两点间隔的最小距离。越小越精确，但是取样会更多。     
+ 	`Gesture Templates List`:我们指定的模板列表。  
+
+
+ --未完2013 08 17
 
 
