@@ -23,6 +23,7 @@ FingerGestures是一个unity3D插件，用来处理用户动作，手势。  译
 * [教程：缩放手势识别器][]
 * [教程：旋转手势识别器][]
 * [教程：自定义手势识别器][]
+* [教程：识别手势事件][]
 
 
 [FingerGestures包结构]: #package_content
@@ -37,8 +38,8 @@ FingerGestures是一个unity3D插件，用来处理用户动作，手势。  译
 [教程：缩放手势识别器]: #detecting_pinch_gesture
 [教程：旋转手势识别器]: #detecting_twist_gesture
 [教程：自定义手势识别器]: #detecting_custom_gesture
-
-
+[教程：识别手势事件]: #detecting_finger_event
+ 
 -----
 
   
@@ -321,12 +322,12 @@ FingerGestures是一个unity3D插件，用来处理用户动作，手势。  译
 	在桌面环境，你可以通过`left-CTRL`键加上鼠标转轮去调节角度。也可以在`Mouse Input Provider`配置别的按键。   
 
 ##教程：自定义手势识别器   <a name="detecting_custom_gesture"></a>      
-	自从FingerGestures 3.0之后，可以通过`PointCloudRecognizer`识别自定义手势。利用基于[$P recognizer](http://depts.washington.edu/aimgroup/proj/dollar/pdollar.html) 是手势匹配算法实现。现在只支持单手指操作的识别，将来会支持多点自定义手势。      
-	![1](/image/fingergestures/customgesturesample.png)      
-	点云识别器会对比用户输入和已经设置好的手势模板，然后会返回最近接近的匹配结果，会返回匹配得分和差距值。   
-	点云识别器是规模和方向固定不变的，这就意味着它可以识别画得比较大或者小的，也或者是反方向的（李若：从左到右变成从右到左）。     
-
-*__点云识别器模板__     
+自从FingerGestures 3.0之后，可以通过`PointCloudRecognizer`识别自定义手势。利用基于[$P recognizer](http://depts.washington.edu/aimgroup/proj/dollar/pdollar.html) 是手势匹配算法实现。现在只支持单手指操作的识别，将来会支持多点自定义手势。      
+![1](/image/fingergestures/customgesturesample.png)      
+点云识别器会对比用户输入和已经设置好的手势模板，然后会返回最近接近的匹配结果，会返回匹配得分和差距值。   
+点云识别器是规模和方向固定不变的，这就意味着它可以识别画得比较大或者小的，也或者是反方向的（李若：从左到右变成从右到左）。     
+	
+* __点云识别器模板__     
 	一个模板包括要识别的手势的数据。是通过一个编辑器编辑的。    
 	![1](/image/fingergestures/pointcloud_template_loop.png)      
 	创建一个模板需要以下步骤：      
@@ -338,7 +339,7 @@ FingerGestures是一个unity3D插件，用来处理用户动作，手势。  译
 	3：然后开始画图案。    
 	![1](/image/fingergestures/gesture_template_inspector_updated.png)      
 
-*__使用点云识别器__      
+* __使用点云识别器__      
  	第一步：     
  	1：保证场景对象已经设置好了finger gesture的属性。    
  	2：创建一个新的`Gestures`对象。    
@@ -347,9 +348,73 @@ FingerGestures是一个unity3D插件，用来处理用户动作，手势。  译
  	以下属性需要特别注意。    
  	`Max Match Distance`：控制识别的精确的程度。数值越低，越精确。    
  	`Sampling Distance`: 连贯动作取样时候，两点间隔的最小距离。越小越精确，但是取样会更多。     
- 	`Gesture Templates List`:我们指定的模板列表。  
+ 	`Gesture Templates List`:我们指定的模板列表。  		
+
+ 	第二步：    
+ 	添加刚刚创建的模板拖放到手势模板列表中。    
+ 	![1](/image/fingergestures/pointcloudrecognizer2.png)      
+
+ 	第三步：    
+ 	1、创建一个c#文件，此处命名为`PointCloudTutorial.cs`。   
+ 	2、在`PointCloudRecognizer ` 下面创建一个手势对象。   
+ 	3、编辑c#文件：    
+
+		public class PointCloudTutorial : MonoBehaviour
+		{
+		    void OnCustomGesture( PointCloudGesture gesture ) 
+		    {
+		        Debug.Log( "Recognized custom gesture: " + gesture.RecognizedTemplate.name + 
+		            ", match score: " + gesture.MatchScore + 
+		            ", match distance: " + gesture.MatchDistance );
+		    }
+		}
+
+	手势事件保护下面几个重要属性：    
+	`gesture.RecognizedTemplate`： 被认为是最佳匹配的手势模板。    
+	`gesture.MatchScore`：一个百分比的值，表示匹配的程度。   
+	`gesture.MatchDistance`：一个测量绝对值，表示匹配程度。   
+	你还可以使用其他手势的属性。 例如位置和选择对象等属性。    
+
+* __用代码创建模板__     	
+你可以使用api字自己的编辑器扩展中在运行时候创建手势模板。  
+
+		void Awake()
+		{
+		    PointCloudGestureTemplate triangle = ScriptableObject.CreateInstance<PointCloudGestureTemplate>();
+		    triangle.name = "Triangle Gesture Template";
+		    triangle.BeginPoints();
+		    triangle.AddPoint( 0, 1, 1 );
+		    triangle.AddPoint( 0, 2, 2 );
+		    triangle.AddPoint( 0, 3, 1 );
+		    triangle.AddPoint( 0, 1, 1 );
+		    triangle.EndPoints();
+		 
+		    PointCloudGestureTemplate square = ScriptableObject.CreateInstance<PointCloudGestureTemplate>();
+		    square.name = "Square Gesture Template";
+		    square.BeginPoints();
+		    square.AddPoint( 0, 2, 1 );
+		    square.AddPoint( 0, 2, 3 );
+		    square.AddPoint( 0, 4, 3 );
+		    square.AddPoint( 0, 4, 1 );
+		    square.AddPoint( 0, 2, 1 );
+		    square.EndPoints();
+ 
+		    PointCloudRegognizer recognizer = gameObject.AddComponent<PointCloudRegognizer>();
+		    recognizer.AddTemplate( triangle );
+		    recognizer.AddTemplate( square );
+		}
+
+	第一个参数`AddPoint `是一个笔画的顺序，该api暂时只支持单线笔画的手势。    
+	当`EndPoints() `调用时候，手势模板会被格式化，所有的点都会重新绘制成0到1范围的数。   
 
 
- --未完2013 08 17
+##教程：识别手指事件   <a name="detecting_finger_event"></a>     
+FingerGestures 可以识别向上，向下，悬停，移动，长按等单点输入手势。各种`FingerEventDetector`组件用于识别对应的手指事件，与
+`GestureRecognizers `类似，都是通过广播信息去触发。   
+
+* __FingerEventDetector__   
+所有的手指事件识别器都派生与一个基础抽象类。通常，每个`FingerEventDetector `实例监控着所有手指事件信号。也可以配置`Finger Index Filter `属性，让其只跟踪特定的手指事件。   
+
+ --未完2013 08 18
 
 
