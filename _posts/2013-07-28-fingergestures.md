@@ -549,8 +549,8 @@ FingerGestures 可以识别向上，向下，悬停，移动，长按等单点�
 		    FingerMotionDetector.OnFingerStationary( FingerMotionEvent e )
 		    FingerGestures.OnFingerEvent( FingerEvent e ) 
 
-	
 
- --EOF--
+
+ --EOF
 
 
