@@ -24,6 +24,7 @@ FingerGestures是一个unity3D插件，用来处理用户动作，手势。  译
 * [教程：旋转手势识别器][]
 * [教程：自定义手势识别器][]
 * [教程：识别手势事件][]
+* [建议：使用.net代理事件][]
 
 
 [FingerGestures包结构]: #package_content
@@ -39,7 +40,8 @@ FingerGestures是一个unity3D插件，用来处理用户动作，手势。  译
 [教程：旋转手势识别器]: #detecting_twist_gesture
 [教程：自定义手势识别器]: #detecting_custom_gesture
 [教程：识别手势事件]: #detecting_finger_event
- 
+[建议：使用.net代理事件]: #using_net_event
+
 -----
 
   
@@ -413,8 +415,142 @@ FingerGestures 可以识别向上，向下，悬停，移动，长按等单点�
 `GestureRecognizers `类似，都是通过广播信息去触发。   
 
 * __FingerEventDetector__   
-所有的手指事件识别器都派生与一个基础抽象类。通常，每个`FingerEventDetector `实例监控着所有手指事件信号。也可以配置`Finger Index Filter `属性，让其只跟踪特定的手指事件。   
+所有的手指事件识别器都派生与一个基础抽象类。通常，每个`FingerEventDetector `实例监控着所有手指事件信号。也可以配置`Finger Index Filter `属性，让其只跟踪特定的手指事件。    
+和手势识别器一样，手指事件识别器传递一个事件数据对象，改该对象派生于`FingerEvent `类，包含以下属性：   
+<table class="table  table-striped  table-condensed">
+	<tbody><tr class="row0">
+		<th class="col0"> 属性</th><th class="col1"> 类型</th><th class="col2"> 描述</th>
+	</tr>
+	<tr class="row1">
+		<td class="col0"> Name </td><td class="col1"> string </td><td class="col2"> 消息的名字 </td>
+	</tr>
+	<tr class="row2">
+		<td class="col0"> Detector </td><td class="col1"> FingerEventDetector</td><td class="col2"> 该次事件中的手指事件识别器</td>
+	</tr>
+	<tr class="row3">
+		<td class="col0"> Finger </td><td class="col1"> FingerGestures.Finger</td><td class="col2"> 该次事件中的手指类</td>
+	</tr>
+	<tr class="row4">
+		<td class="col0"> Position</td><td class="col1"> Vector2</td><td class="col2">事件所发生的位置 </td>
+	</tr>
+	<tr class="row5">
+		<td class="col0"> Selection </td><td class="col1"> GameObject </td><td class="col2"> 被选中游戏对象 （依赖`ScreenRaycaster `组件）</td>
+	</tr>
+	<tr class="row6">
+		<td class="col0">Hit/td><td class="col1"> RaycastHit</td><td class="col2"> 光线投射碰撞，由`ScreenRaycaster`提供，在正常显示上非常有用</td>
+	</tr>
+	
+</tbody></table>     
 
- --未完2013 08 18
+* __FingerUpDetector__    
+	
+		void OnFingerUp( FingerUpEvent e ) 
+		{
+		    //手指已经持续的时间
+		    float elapsedTime = e.TimeHeldDown;
+		}	
+
+* __FingerHoverDetector__
+
+		void OnFingerHover( FingerHoverEvent e ) 
+		{
+		    // 检查状态，是进入还是离开.
+		    if( e.Phase == FingerHoverPhase.Enter )
+		    {
+		        Debug.Log( e.Finger + " entered object: " + e.Selection );
+		    }
+ 		   else if( e.Phase == FingerHoverPhase.Exit )
+		    {
+ 		       Debug.Log( e.Finger + " exited object: " + e.Selection );
+		    }
+		}  
+
+* __FingerMotionDetector__     
+该识别器能够识别两种事件。   
+1、OnFingerMove ：当手指位置距离上一帧位置有发生变化。    
+2、OnFingerStationary ：当手指与上一帧位置一样。  
+	
+		void OnFingerMove( FingerMotionEvent e ) 
+		{
+		    float elapsed = e.ElapsedTime;
+ 
+		    if( e.Phase == FingerMotionPhase.Started )
+		        Debug.Log( e.Finger + " started moving at " + e.Position);
+		    else if( e.Phase == FingerMotionPhase.Updated )
+		        Debug.Log( e.Finger + " moving at " + e.Position );
+		    else if( e.Phase == FingerMotionPhase.Ended )
+		        Debug.Log( e.Finger + " stopped moving at " + e.Position );
+		}
+ 
+		void OnFingerStationary( FingerMotionEvent e ) 
+		{
+		    float elapsed = e.ElapsedTime;
+ 
+		    if( e.Phase == FingerMotionPhase.Started )
+		        Debug.Log( e.Finger + " started stationary state at " + e.Position );
+		    else if( e.Phase == FingerMotionPhase.Updated )
+		        Debug.Log( e.Finger + " is still stationary at " + e.Position );
+		    else if( e.Phase == FingerMotionPhase.Ended )
+ 		       Debug.Log( e.Finger + " stopped being stationary at " + e.Position );
+		}
+
+
+##建议：使用.net代理事件   <a name="using_net_event"></a> 
+当使用unity的`SendMessage()`函数广播事件消息非常方便，但是效率低而且不够.NET代理事件灵活。    
+* __Gesture Events__     
+每个手势识别器都暴露一个公共的`OnGesture`.NET事件，可以匹配手势事件和手指事件。用法跟用`SendMessage()`一样。   
+	
+		[RequireComponent( typeof( TapGesture ) )]
+		public class TapTutorial : MonoBehaviour
+		{
+		    void Start()
+		    {
+		        // 在对象里面寻找轻击事件识别器
+ 		       TapRecognizer tap = GetComponent<TapRecognizer>();
+ 
+		        // 订阅它的.NET事件
+ 		       tap.OnGesture += MyTapEventHandler;
+ 		   }
+ 
+		    void MyTapEventHandler( TapGesture gesture )
+		    {
+		        Debug.Log( "Tap detected at " + gesture.Position );
+		    }
+		}	
+
+有时候你需要停止监听事件。你可以用以下办法：    
+	
+		tap.OnGesture -= MyTapEventHandler; 
+
+注意停止监听事件时候相关对象的生命周期，有可能会导致内存泄露，这是.NET代理事件的陷阱。   
+	
+另外一种方法是，`FingerGestures`单例暴露一个全局的`OnGestureEvent`钩子，可以监听到任何手势事件。   
+	
+		    void Start()
+		    {
+		        FingerGestures.OnGestureEvent += FingerGestures_OnGestureEvent;
+		    }
+ 
+		    void FingerGestures_OnGestureEvent( Gesture gesture )
+		    {
+		        Debug.Log( gesture.Recognizer.name + " fired its gesture event" );
+ 
+		        if( gesture is TapGesture )
+ 		           Debug.Log( "Tapped: " + ((TapGesture)gesture).Taps );
+		    }
+
+* __Finger Event__     
+	跟上面类似用法。  
+
+		    FingerUpDetector.OnFingerUp( FingerUpEvent e )
+		    FingerDownDetector.OnFingerDown( FingerDownEvent e )
+		    FingerHoverDetector.OnFingerHover( FingerHoverEvent e )
+		    FingerMotionDetector.OnFingerMove( FingerMotionEvent e )
+		    FingerMotionDetector.OnFingerStationary( FingerMotionEvent e )
+		    FingerGestures.OnFingerEvent( FingerEvent e ) 
+
+	
+
+ --EOF--
 
 
