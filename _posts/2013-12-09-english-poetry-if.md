@@ -2,8 +2,8 @@
 layout: post
 title: "还未做到的境界"
 description: ""
-category: 
-tags: [life]
+category: life
+tags: []
 ---
 {% include JB/setup %}
 
