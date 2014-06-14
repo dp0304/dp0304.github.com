@@ -1,7 +1,7 @@
 ---
 layout: page
 title: 救药无方 
-tagline: Hey you !!! You may say that I'm a dreamer, but I' m not the only one !
+tagline: 当大浪潮压过来时候，我会竖中指，我会还手。
 ---
 {% include JB/setup %}
 
