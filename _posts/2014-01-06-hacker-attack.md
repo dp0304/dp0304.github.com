@@ -2,7 +2,7 @@
 layout: post
 title: "记一次服务器被黑了"
 description: ""
-category: c
+category: linux
 tags: []
 ---
 {% include JB/setup %}
