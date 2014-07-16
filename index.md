@@ -1,7 +1,7 @@
 ---
 layout: page
-title: 救药无方 
-tagline: 当大浪潮压过来时候，我会竖中指，我会还手。
+title: 从前慢 
+tagline: 说一句 是一句 
 ---
 {% include JB/setup %}
 
