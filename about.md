@@ -58,7 +58,12 @@ csdn，github，twitter，googleplus，微博，qq，stack overflow，人人小�
 
 * **很文艺**	 :	文艺但不戴眼镜。。哈  
 
-* **爱运动**	 :	来单挑啊。。什么球你挑~~  
+* **爱运动**	 :	来单挑啊。。什么球你挑~~    
+
+
+2014-
+有限温存，无限辛酸…Carpe diem！刻薄，意象跳跃，自我保护似的回避温暖，骨子里是个爱讲段子的程序员，讲段子的时候骨子里也不开心。   
+已将id改为**puzzleyes**   
   
 
 
@@ -68,8 +73,9 @@ csdn，github，twitter，googleplus，微博，qq，stack overflow，人人小�
 
 2012之前我确实做过点项目，只是不想啰嗦咯  
 
-2013在和同学一起做webgame
-
+2013在和同学一起做webgame  
+  
+2014入厂做大数据挖掘  
 
 ## what I want to do   <a name="want"></a>
 not for money，but for fun
