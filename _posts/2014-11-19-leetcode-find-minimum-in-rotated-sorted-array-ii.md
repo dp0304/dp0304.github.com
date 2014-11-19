@@ -6,7 +6,8 @@ category: leetcode
 tags: [c++]
 ---
 {% include JB/setup %}
-题目：   
+题目： 
+  
 	Follow up for "Find Minimum in Rotated Sorted Array":
 	What if duplicates are allowed?
 
