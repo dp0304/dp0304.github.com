@@ -3,7 +3,7 @@ layout: post
 title: "leetcode: Min Stack"
 description: ""
 category: leetcode
-tags: [c++]
+tags: []
 ---
 {% include JB/setup %}
 

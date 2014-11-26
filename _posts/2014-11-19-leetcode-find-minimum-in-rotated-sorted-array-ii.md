@@ -3,7 +3,7 @@ layout: post
 title: "leetcode: Find Minimum in Rotated Sorted Array II"
 description: ""
 category: leetcode
-tags: [c++]
+tags: []
 ---
 {% include JB/setup %}
 题目： 
