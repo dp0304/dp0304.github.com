@@ -2,7 +2,7 @@
 layout: post
 title: "leetcode: Find Peak Element "
 description: ""
-category: 
+category: leetcode
 tags: []
 ---
 {% include JB/setup %} 
