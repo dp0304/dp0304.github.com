@@ -10,6 +10,8 @@ pygments: true
 kramdown:
   input: GFM
   hard_wrap: false
+  
+theme:hooligan
 # Themes are encouraged to use these universal variables 
 # so be sure to set them if your theme uses them.
 #
