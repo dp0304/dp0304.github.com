@@ -36,7 +36,7 @@ group: navigation
 
 [who am I]: #who
 [what I want to do]:  #want
-[where am I come form]:  #where
+[where do I come form]:  #where
 [what did I done]:    #what
 
 
@@ -63,7 +63,7 @@ csdn，github，twitter，googleplus，微博，qq，stack overflow，人人小�
 
 2014-
 有限温存，无限辛酸…Carpe diem！刻薄，意象跳跃，自我保护似的回避温暖，骨子里是个爱讲段子的程序员，讲段子的时候骨子里也不开心。   
-已将id改为**puzzleyes**   
+已将id改为**26**   
   
 
 
@@ -76,11 +76,12 @@ csdn，github，twitter，googleplus，微博，qq，stack overflow，人人小�
 2013在和同学一起做webgame  
   
 2014入厂做大数据挖掘  
+2015 2016也是
 
 ## what I want to do   <a name="want"></a>
 not for money，but for fun
 
-## where am I come form  <a name="where"></a>
+## where do I come form  <a name="where"></a>
 
 2013.6毕业了~~~	
   
